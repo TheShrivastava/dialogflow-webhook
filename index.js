@@ -9,23 +9,28 @@ app.use(bodyParser.json());
 app.post('/webhook', async (req, res) => {
   const intent = req.body.queryResult.intent.displayName;
   const parameters = req.body.queryResult.parameters;
-  const user = req.body.originalDetectIntentRequest?.payload?.data?.user?.name || "Unknown";
+
+  // Extract parameters from Dialogflow
+  const location = parameters['geo-city'];
+  const activity = parameters['activity'];
+  const needForTutor = parameters['needTutor'] || "unspecified";
   const timestamp = new Date().toISOString();
-  const location = parameters['geo-city'] || "Indore";
   const uuid = uuidv4();
 
-  if (intent === 'View Booking') {
+  if (intent === 'view') {
     try {
+      // Log booking to spreadsheet via SheetDB
       await axios.post('https://sheetdb.io/api/v1/y5jawzr5mj38r', {
         data: {
-          user,
-          intent,
-          timestamp,
-          location,
-          uuid
+          Location: location,
+          Activity: activity,
+          UUID: uuid,
+          "Need for tutor": needForTutor,
+          Timestamp: timestamp
         }
       });
 
+      // Respond with Slack card
       const slackCard = {
         fulfillmentMessages: [
           {
@@ -36,16 +41,29 @@ app.post('/webhook', async (req, res) => {
                   type: "section",
                   text: {
                     type: "mrkdwn",
-                    text: "*Your badminton booking is confirmed!*"
-                  },
-                  accessory: {
-                    type: "button",
-                    text: {
-                      type: "plain_text",
-                      text: "View Booking"
-                    },
-                    value: "view badminton"
+                    text: `*Your ${activity} booking is confirmed!*`
                   }
+                },
+                {
+                  type: "actions",
+                  elements: [
+                    {
+                      type: "button",
+                      text: {
+                        type: "plain_text",
+                        text: "View Booking"
+                      },
+                      value: "view_booking"
+                    },
+                    {
+                      type: "button",
+                      text: {
+                        type: "plain_text",
+                        text: "Cancel Booking"
+                      },
+                      value: "cancel_booking"
+                    }
+                  ]
                 },
                 {
                   type: "context",
@@ -64,6 +82,7 @@ app.post('/webhook', async (req, res) => {
 
       return res.json(slackCard);
     } catch (error) {
+      console.error("Error logging to spreadsheet:", error.message);
       return res.json({ fulfillmentText: "Booking confirmed, but we couldn’t log it to the spreadsheet." });
     }
   }
