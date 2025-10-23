@@ -20,7 +20,6 @@ app.post('/webhook', async (req, res) => {
   console.log("Intent:", intent);
   console.log("Parameters:", parameters);
 
-  // Extract activity from any matching entity key
   const rawEntity =
     parameters.sport_swimming ||
     parameters.sport_chess ||
@@ -49,92 +48,88 @@ app.post('/webhook', async (req, res) => {
         }
       });
 
-      const slackPayload = {
-        blocks: [
-          {
-            type: "image",
-            image_url: TICK_IMAGE_URL,
-            alt_text: "Booking confirmed"
-          },
-          {
-            type: "section",
-            text: {
-              type: "mrkdwn",
-              text: `✅ *Your ${activity} booking is confirmed!*\nLocation: *${location}*\nTutor required: *${needForTutor}*`
-            }
-          },
-          {
-            type: "actions",
-            elements: [
-              {
-                type: "button",
-                text: { type: "plain_text", text: "View Booking" },
-                url: SPREADSHEET_URL
-              },
-              {
-                type: "button",
-                text: { type: "plain_text", text: "Cancel Booking" },
-                value: uuid,
-                action_id: "cancel_booking"
-              }
-            ]
-          },
-          {
-            type: "context",
-            elements: [
-              {
-                type: "mrkdwn",
-                text: `Booking ID: \`${uuid}\``
-              }
-            ]
-          }
-        ]
-      };
-
-      const messengerPayload = {
-        richContent: [
-          [
-            {
-              type: "image",
-              rawUrl: TICK_IMAGE_URL,
-              accessibilityText: "Booking confirmed"
-            },
-            {
-              type: "description",
-              title: `✅ Booking Confirmed: ${activity}`,
-              text: [
-                `Location: ${location}`,
-                `Tutor required: ${needForTutor}`,
-                `Booking ID: ${uuid}`
-              ]
-            },
-            {
-              type: "button",
-              icon: { type: "launch" },
-              text: "View Booking",
-              link: SPREADSHEET_URL
-            },
-            {
-              type: "button",
-              text: "Cancel Booking",
-              event: {
-                name: "cancel_booking",
-                parameters: { uuid: uuid }
-              }
-            }
-          ]
-        ]
-      };
-
       return res.json({
         fulfillmentMessages: [
           {
             platform: "SLACK",
-            payload: slackPayload
+            payload: {
+              blocks: [
+                {
+                  type: "image",
+                  image_url: TICK_IMAGE_URL,
+                  alt_text: "Booking confirmed"
+                },
+                {
+                  type: "section",
+                  text: {
+                    type: "mrkdwn",
+                    text: `✅ *Your ${activity} booking is confirmed!*\nLocation: *${location}*\nTutor required: *${needForTutor}*`
+                  }
+                },
+                {
+                  type: "actions",
+                  elements: [
+                    {
+                      type: "button",
+                      text: { type: "plain_text", text: "View Booking" },
+                      url: SPREADSHEET_URL
+                    },
+                    {
+                      type: "button",
+                      text: { type: "plain_text", text: "Cancel Booking" },
+                      value: uuid,
+                      action_id: "cancel_booking"
+                    }
+                  ]
+                },
+                {
+                  type: "context",
+                  elements: [
+                    {
+                      type: "mrkdwn",
+                      text: `Booking ID: \`${uuid}\``
+                    }
+                  ]
+                }
+              ]
+            }
           },
           {
             platform: "DIALOGFLOW_MESSENGER",
-            payload: messengerPayload
+            payload: {
+              richContent: [
+                [
+                  {
+                    type: "image",
+                    rawUrl: TICK_IMAGE_URL,
+                    accessibilityText: "Booking confirmed"
+                  },
+                  {
+                    type: "description",
+                    title: `✅ Booking Confirmed: ${activity}`,
+                    text: [
+                      `Location: ${location}`,
+                      `Tutor required: ${needForTutor}`,
+                      `Booking ID: ${uuid}`
+                    ]
+                  },
+                  {
+                    type: "button",
+                    icon: { type: "launch" },
+                    text: "View Booking",
+                    link: SPREADSHEET_URL
+                  },
+                  {
+                    type: "button",
+                    text: "Cancel Booking",
+                    event: {
+                      name: "cancel_booking",
+                      parameters: { uuid: uuid }
+                    }
+                  }
+                ]
+              ]
+            }
           },
           {
             text: {
