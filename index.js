@@ -99,12 +99,13 @@ app.post('/webhook', async (req, res) => {
 
       const channelId = req.body.originalDetectIntentRequest?.payload?.data?.channel || null;
 
+      console.log("Slack Channel ID:", channelId);
+
       return res.json({
         fulfillmentMessages: [
           {
             platform: "SLACK",
             payload: {
-              channel: channelId,
               blocks: [
                 {
                   type: "section",
