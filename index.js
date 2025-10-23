@@ -36,7 +36,7 @@ app.post('/webhook', async (req, res) => {
   const rawEntity = parameters.activity;
   const activity = entityMap[rawEntity] || "unspecified";
   const location = parameters['geo-city'] || "unspecified";
-  const needForTutor = parameters['needTutor'] || "unspecified";
+  const needForTutor = parameters['tutor'] ? "Yes" : "No";
   const uuid = uuidv4();
 
   // ✅ Booking intent
@@ -67,7 +67,7 @@ app.post('/webhook', async (req, res) => {
               type: "section",
               text: {
                 type: "mrkdwn",
-                text: `✅ *Your ${activity} booking is confirmed!*`
+                text: `✅ *Your ${activity} booking is confirmed!*\nLocation: *${location}*\nTutor required: *${needForTutor}*`
               }
             },
             {
@@ -115,7 +115,7 @@ app.post('/webhook', async (req, res) => {
                 title: `✅ Booking Confirmed: ${activity}`,
                 text: [
                   `Location: ${location}`,
-                  `Tutor: ${needForTutor}`,
+                  `Tutor required: ${needForTutor}`,
                   `Booking ID: ${uuid}`
                 ]
               },
