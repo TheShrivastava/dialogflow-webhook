@@ -14,8 +14,32 @@ app.post('/webhook', async (req, res) => {
   const intent = req.body.queryResult.intent.displayName;
   const parameters = req.body.queryResult.parameters;
   const timestamp = new Date().toISOString();
-
   const normalizedIntent = intent.toLowerCase().replace(/[\s.]+/g, '_');
+
+  const eventPayload = req.body.originalDetectIntentRequest?.payload?.event;
+
+  // ✅ Handle Messenger event-based cancel_booking
+  if (eventPayload?.name === 'cancel_booking') {
+    const cancelUuid = eventPayload.parameters?.uuid;
+
+    if (!cancelUuid) {
+      return res.json({
+        fulfillmentText: "Missing booking ID. Cannot cancel."
+      });
+    }
+
+    try {
+      await axios.delete(`${SHEETDB_API}/UUID/${cancelUuid}`);
+      return res.json({
+        fulfillmentText: `❌ Booking with ID ${cancelUuid} has been cancelled.`
+      });
+    } catch (error) {
+      console.error("Error cancelling booking:", error.message);
+      return res.json({
+        fulfillmentText: "We couldn’t cancel your booking. Please try again."
+      });
+    }
+  }
 
   console.log("Intent:", intent);
   console.log("Normalized Intent:", normalizedIntent);
@@ -106,7 +130,7 @@ app.post('/webhook', async (req, res) => {
                   },
                   {
                     type: "button",
-                    icon: { type: "launch" },
+                    icon: { type: "cross" },
                     text: "Cancel Booking",
                     event: {
                       name: "cancel_booking",
