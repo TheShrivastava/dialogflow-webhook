@@ -15,11 +15,14 @@ app.post('/webhook', async (req, res) => {
   const parameters = req.body.queryResult.parameters;
   const timestamp = new Date().toISOString();
 
-  const normalizedIntent = intent.toLowerCase().replace(/\s+/g, '_');
+  // Normalize intent: replace spaces and dots with underscores
+  const normalizedIntent = intent.toLowerCase().replace(/[\s.]+/g, '_');
 
   console.log("Intent:", intent);
+  console.log("Normalized Intent:", normalizedIntent);
   console.log("Parameters:", parameters);
 
+  // Extract activity from any matching entity key
   const rawEntity =
     parameters.sport_swimming ||
     parameters.sport_chess ||
