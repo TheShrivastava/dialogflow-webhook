@@ -11,14 +11,9 @@ const SPREADSHEET_URL = 'https://docs.google.com/spreadsheets/d/1eU7cn3XBsoTFrMg
 const TICK_IMAGE_URL = 'https://www.clipartkey.com/mpngs/m/230-2305459_green-ticks-png-image-check-mark-transparent-gif.png';
 
 app.post('/webhook', async (req, res) => {
-  const intent = req.body.queryResult.intent.displayName;
-  const parameters = req.body.queryResult.parameters;
-  const timestamp = new Date().toISOString();
-  const normalizedIntent = intent.toLowerCase().replace(/[\s.]+/g, '_');
-
+  // ✅ Handle Messenger event-based cancel_booking FIRST
   const eventPayload = req.body.originalDetectIntentRequest?.payload?.event;
 
-  // ✅ Handle Messenger event-based cancel_booking
   if (eventPayload?.name === 'cancel_booking') {
     const cancelUuid = eventPayload.parameters?.uuid;
 
@@ -40,6 +35,12 @@ app.post('/webhook', async (req, res) => {
       });
     }
   }
+
+  // ✅ Proceed with intent-based logic
+  const intent = req.body.queryResult.intent.displayName;
+  const parameters = req.body.queryResult.parameters;
+  const timestamp = new Date().toISOString();
+  const normalizedIntent = intent.toLowerCase().replace(/[\s.]+/g, '_');
 
   console.log("Intent:", intent);
   console.log("Normalized Intent:", normalizedIntent);
@@ -130,7 +131,7 @@ app.post('/webhook', async (req, res) => {
                   },
                   {
                     type: "button",
-                    icon: { type: "cross" },
+                    icon: { type: "cancel" },
                     text: "Cancel Booking",
                     event: {
                       name: "cancel_booking",
