@@ -46,6 +46,29 @@ app.post('/webhook', async (req, res) => {
   console.log("Normalized Intent:", normalizedIntent);
   console.log("Parameters:", parameters);
 
+  // ✅ Handle intent-based cancel_booking
+  if (normalizedIntent === 'cancel_booking') {
+    const cancelUuid = parameters.uuid;
+
+    if (!cancelUuid) {
+      return res.json({
+        fulfillmentText: "Missing booking ID. Cannot cancel."
+      });
+    }
+
+    try {
+      await axios.delete(`${SHEETDB_API}/UUID/${cancelUuid}`);
+      return res.json({
+        fulfillmentText: `❌ Booking with ID ${cancelUuid} has been cancelled.`
+      });
+    } catch (error) {
+      console.error("Error cancelling booking:", error.message);
+      return res.json({
+        fulfillmentText: "We couldn’t cancel your booking. Please try again."
+      });
+    }
+  }
+
   const rawEntity =
     parameters.sport_swimming ||
     parameters.sport_chess ||
