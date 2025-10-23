@@ -32,9 +32,14 @@ app.post('/webhook', async (req, res) => {
   // Normalize intent name
   const normalizedIntent = intent.toLowerCase().replace(/\s+/g, '_');
 
+  // Debug logs
+  console.log("Intent:", intent);
+  console.log("Normalized Intent:", normalizedIntent);
+  console.log("Parameters:", parameters);
+
   // Extract parameters
   const rawEntity = parameters.activity;
-  const activity = entityMap[rawEntity] || "unspecified";
+  const activity = entityMap[rawEntity] || rawEntity || "unspecified";
   const location = parameters['geo-city'] || "unspecified";
   const needForTutor = parameters['tutor'] ? "Yes" : "No";
   const uuid = uuidv4();
@@ -138,8 +143,14 @@ app.post('/webhook', async (req, res) => {
         }
       };
 
+      // Fallback text to ensure rendering + clear slot filling
       return res.json({
-        fulfillmentMessages: [slackCard, dialogflowMessengerCard]
+        fulfillmentMessages: [
+          { text: { text: ["✅ Your booking is confirmed."] } },
+          slackCard,
+          dialogflowMessengerCard
+        ],
+        outputContexts: []
       });
     } catch (error) {
       console.error("Error logging to spreadsheet:", error.message);
@@ -167,7 +178,3 @@ app.post('/webhook', async (req, res) => {
   }
 
   // Fallback for unhandled intents
-  return res.json({ fulfillmentText: "Intent not handled by webhook." });
-});
-
-app.listen(3000, () => console.log('Webhook server running on port 3000'));
