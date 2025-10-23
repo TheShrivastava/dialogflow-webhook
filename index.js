@@ -49,94 +49,98 @@ app.post('/webhook', async (req, res) => {
         }
       });
 
-      const slackCard = {
-        platform: "SLACK",
-        payload: {
-          blocks: [
-            {
-              type: "image",
-              image_url: TICK_IMAGE_URL,
-              alt_text: "Booking confirmed"
-            },
-            {
-              type: "section",
-              text: {
-                type: "mrkdwn",
-                text: `✅ *Your ${activity} booking is confirmed!*\nLocation: *${location}*\nTutor required: *${needForTutor}*`
-              }
-            },
-            {
-              type: "actions",
-              elements: [
-                {
-                  type: "button",
-                  text: { type: "plain_text", text: "View Booking" },
-                  url: SPREADSHEET_URL
-                },
-                {
-                  type: "button",
-                  text: { type: "plain_text", text: "Cancel Booking" },
-                  value: uuid,
-                  action_id: "cancel_booking"
-                }
-              ]
-            },
-            {
-              type: "context",
-              elements: [
-                {
-                  type: "mrkdwn",
-                  text: `Booking ID: \`${uuid}\``
-                }
-              ]
+      const slackPayload = {
+        blocks: [
+          {
+            type: "image",
+            image_url: TICK_IMAGE_URL,
+            alt_text: "Booking confirmed"
+          },
+          {
+            type: "section",
+            text: {
+              type: "mrkdwn",
+              text: `✅ *Your ${activity} booking is confirmed!*\nLocation: *${location}*\nTutor required: *${needForTutor}*`
             }
-          ]
-        }
-      };
-
-      const dialogflowMessengerCard = {
-        platform: "DIALOGFLOW_MESSENGER",
-        payload: {
-          richContent: [
-            [
+          },
+          {
+            type: "actions",
+            elements: [
               {
-                type: "image",
-                rawUrl: TICK_IMAGE_URL,
-                accessibilityText: "Booking confirmed"
-              },
-              {
-                type: "description",
-                title: `✅ Booking Confirmed: ${activity}`,
-                text: [
-                  `Location: ${location}`,
-                  `Tutor required: ${needForTutor}`,
-                  `Booking ID: ${uuid}`
-                ]
+                type: "button",
+                text: { type: "plain_text", text: "View Booking" },
+                url: SPREADSHEET_URL
               },
               {
                 type: "button",
-                icon: { type: "launch" },
-                text: "View Booking",
-                link: SPREADSHEET_URL
-              },
-              {
-                type: "button",
-                text: "Cancel Booking",
-                event: {
-                  name: "cancel_booking",
-                  parameters: { uuid: uuid }
-                }
+                text: { type: "plain_text", text: "Cancel Booking" },
+                value: uuid,
+                action_id: "cancel_booking"
               }
             ]
+          },
+          {
+            type: "context",
+            elements: [
+              {
+                type: "mrkdwn",
+                text: `Booking ID: \`${uuid}\``
+              }
+            ]
+          }
+        ]
+      };
+
+      const messengerPayload = {
+        richContent: [
+          [
+            {
+              type: "image",
+              rawUrl: TICK_IMAGE_URL,
+              accessibilityText: "Booking confirmed"
+            },
+            {
+              type: "description",
+              title: `✅ Booking Confirmed: ${activity}`,
+              text: [
+                `Location: ${location}`,
+                `Tutor required: ${needForTutor}`,
+                `Booking ID: ${uuid}`
+              ]
+            },
+            {
+              type: "button",
+              icon: { type: "launch" },
+              text: "View Booking",
+              link: SPREADSHEET_URL
+            },
+            {
+              type: "button",
+              text: "Cancel Booking",
+              event: {
+                name: "cancel_booking",
+                parameters: { uuid: uuid }
+              }
+            }
           ]
-        }
+        ]
       };
 
       return res.json({
         fulfillmentMessages: [
-          { text: { text: ["✅ Your booking is confirmed."] } },
-          slackCard,
-          dialogflowMessengerCard
+          {
+            platform: "SLACK",
+            payload: slackPayload
+          },
+          {
+            platform: "DIALOGFLOW_MESSENGER",
+            payload: messengerPayload
+          },
+          {
+            text: {
+              text: ["✅ Your booking is confirmed."]
+            }
+          }
         ],
         outputContexts: []
       });
