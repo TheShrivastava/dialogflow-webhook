@@ -6,20 +6,6 @@ const { v4: uuidv4 } = require('uuid');
 const app = express();
 app.use(bodyParser.json());
 
-// 🔍 Map Dialogflow entity values to activity types
-const entityMap = {
-  acad_history: "history",
-  acad_maths: "maths",
-  acad_sci: "science",
-  art_drawing: "drawing",
-  art_painting: "painting",
-  art_sculpting: "sculpting",
-  sport_badminton: "badminton",
-  sport_chess: "chess",
-  sport_swimming: "swimming"
-};
-
-// ✅ Your actual SheetDB and spreadsheet URLs
 const SHEETDB_API = 'https://sheetdb.io/api/v1/y5jawzr5mj38r';
 const SPREADSHEET_URL = 'https://docs.google.com/spreadsheets/d/1eU7cn3XBsoTFrMgYKhMOJC-YMqx_usqh1KAYyk4UL30/edit?pli=1&gid=0';
 const TICK_IMAGE_URL = 'https://www.clipartkey.com/mpngs/m/230-2305459_green-ticks-png-image-check-mark-transparent-gif.png';
@@ -29,25 +15,18 @@ app.post('/webhook', async (req, res) => {
   const parameters = req.body.queryResult.parameters;
   const timestamp = new Date().toISOString();
 
-  // Normalize intent name
   const normalizedIntent = intent.toLowerCase().replace(/\s+/g, '_');
 
-  // Debug logs
   console.log("Intent:", intent);
-  console.log("Normalized Intent:", normalizedIntent);
   console.log("Parameters:", parameters);
 
-  // Extract parameters
-  const rawEntity = parameters.activity;
-  const activity = entityMap[rawEntity] || rawEntity || "unspecified";
+  const activity = parameters.activity || "unspecified";
   const location = parameters['geo-city'] || "unspecified";
   const needForTutor = parameters['tutor'] ? "Yes" : "No";
   const uuid = uuidv4();
 
-  // ✅ Booking intent
   if (normalizedIntent.startsWith('book_')) {
     try {
-      // Log booking to spreadsheet
       await axios.post(SHEETDB_API, {
         data: {
           Location: location,
@@ -58,7 +37,6 @@ app.post('/webhook', async (req, res) => {
         }
       });
 
-      // Slack card
       const slackCard = {
         platform: "SLACK",
         payload: {
@@ -104,7 +82,6 @@ app.post('/webhook', async (req, res) => {
         }
       };
 
-      // Dialogflow Messenger card
       const dialogflowMessengerCard = {
         platform: "DIALOGFLOW_MESSENGER",
         payload: {
@@ -143,7 +120,6 @@ app.post('/webhook', async (req, res) => {
         }
       };
 
-      // Fallback text to ensure rendering + clear slot filling
       return res.json({
         fulfillmentMessages: [
           { text: { text: ["✅ Your booking is confirmed."] } },
@@ -160,7 +136,6 @@ app.post('/webhook', async (req, res) => {
     }
   }
 
-  // ❌ Cancel booking intent
   if (normalizedIntent === 'cancel_booking') {
     const cancelUuid = parameters.uuid;
 
@@ -177,4 +152,7 @@ app.post('/webhook', async (req, res) => {
     }
   }
 
-  // Fallback for unhandled intents
+  return res.json({ fulfillmentText: "Intent not handled by webhook." });
+});
+
+app.listen(3000, () => console.log('Webhook server running on port 3000'));
