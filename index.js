@@ -97,7 +97,57 @@ app.post('/webhook', async (req, res) => {
         }
       });
 
-      return res.json({"blocks": [ { "type": "section", "text": { "type": "mrkdwn", "text": "✅ *Slack test card rendered!*" } }, { "type": "actions", "elements": [ { "type": "button", "text": { "type": "plain_text", "text": "Cancel Booking" }, "value": "cancel" } ] } ] },
+      const channelId = req.body.originalDetectIntentRequest?.payload?.data?.channel || null;
+
+      return res.json({
+        fulfillmentMessages: [
+          {
+            platform: "SLACK",
+            payload: {
+              channel: channelId,
+              blocks: [
+                {
+                  type: "section",
+                  text: {
+                    type: "mrkdwn",
+                    text: `✅ *Your ${activity} booking is confirmed!*\nLocation: *${location}*\nTutor required: *${needForTutor}*`
+                  }
+                },
+                {
+                  type: "context",
+                  elements: [
+                    {
+                      type: "mrkdwn",
+                      text: `Booking ID: \`${uuid}\``
+                    }
+                  ]
+                },
+                {
+                  type: "actions",
+                  elements: [
+                    {
+                      type: "button",
+                      text: {
+                        type: "plain_text",
+                        text: "View Booking"
+                      },
+                      action_id: "view_booking",
+                      url: SPREADSHEET_URL
+                    },
+                    {
+                      type: "button",
+                      text: {
+                        type: "plain_text",
+                        text: "Cancel Booking"
+                      },
+                      action_id: "cancel_booking",
+                      value: `cancel_booking_${uuid}`
+                    }
+                  ]
+                }
+              ]
+            }
+          },
           {
             platform: "DIALOGFLOW_MESSENGER",
             payload: {
@@ -151,5 +201,3 @@ app.post('/webhook', async (req, res) => {
 });
 
 app.listen(3000, () => console.log('Webhook server running on port 3000'));
-
-
