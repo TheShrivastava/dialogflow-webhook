@@ -100,7 +100,6 @@ app.post('/webhook', async (req, res) => {
       });
 
       console.log("Incoming:", JSON.stringify(req.body, null, 2));
-      console.log("Outgoing:", JSON.stringify(responsePayload, null, 2));
 
       return res.json({
         fulfillmentMessages: [
@@ -113,7 +112,7 @@ app.post('/webhook', async (req, res) => {
                   type: "section",
                   text: {
                     type: "mrkdwn",
-                    text: `✅ *Your ${activity} booking is confirmed!*\nLocation: *${location}*\nTutor required: *${needForTutor}*`
+                    text: `✅ *Your ${activity} booking is confirmed!*\nLocation: *${location}*\nTutor required: *${needForTutor}*\nDate: *${date}*`
                   }
                 },
                 {
@@ -167,6 +166,7 @@ app.post('/webhook', async (req, res) => {
                     text: [
                       `Location: ${location}`,
                       `Tutor required: ${needForTutor}`,
+                      `Booked for date: ${date}`,
                       `Booking ID: ${uuid}`
                     ]
                   },
