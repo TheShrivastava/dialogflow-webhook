@@ -82,7 +82,7 @@ app.post('/webhook', async (req, res) => {
 
   const activity = rawEntity || "unspecified";
   const location = parameters['geo-city'] || "unspecified";
-  const date = parameters['date-time'] || "unspecified";
+  const date = parameters['date-time'].date_time || parameters['date-time'] || "unspecified";
   const needForTutor = parameters['tutor'] ? "Yes" : "No";
   const uuid = uuidv4();
 
@@ -98,6 +98,9 @@ app.post('/webhook', async (req, res) => {
           "Booked on": timestamp
         }
       });
+
+      console.log("Incoming:", JSON.stringify(req.body, null, 2));
+      console.log("Outgoing:", JSON.stringify(responsePayload, null, 2));
 
       return res.json({
         fulfillmentMessages: [
