@@ -11,7 +11,7 @@ const SPREADSHEET_URL = 'https://docs.google.com/spreadsheets/d/1eU7cn3XBsoTFrMg
 const TICK_IMAGE_URL = 'https://www.clipartkey.com/mpngs/m/230-2305459_green-ticks-png-image-check-mark-transparent-gif.png';
 
 app.post('/webhook', async (req, res) => {
-  // ✅ Handle Messenger event-based cancel_booking FIRST
+  // Handle Messenger event-based cancel_booking FIRST
   const eventPayload = req.body.originalDetectIntentRequest?.payload?.event;
 
   if (eventPayload?.name === 'cancel_booking') {
@@ -26,7 +26,7 @@ app.post('/webhook', async (req, res) => {
     try {
       await axios.delete(`${SHEETDB_API}/UUID/${cancelUuid}`);
       return res.json({
-        fulfillmentText: `❌ Booking with ID ${cancelUuid} has been cancelled.`
+        fulfillmentText: ` ✅ Booking with ID ${cancelUuid} has been cancelled.`
       });
     } catch (error) {
       console.error("Error cancelling booking:", error.message);
@@ -36,7 +36,7 @@ app.post('/webhook', async (req, res) => {
     }
   }
 
-  // ✅ Proceed with intent-based logic
+  // Proceed with intent-based logic
   const intent = req.body.queryResult.intent.displayName;
   const parameters = req.body.queryResult.parameters;
   const timestamp = new Date().toISOString();
@@ -46,7 +46,7 @@ app.post('/webhook', async (req, res) => {
   console.log("Normalized Intent:", normalizedIntent);
   console.log("Parameters:", parameters);
 
-  // ✅ Handle intent-based cancel_booking
+  // Handle intent-based cancel_booking
   if (normalizedIntent === 'cancel_booking') {
     const cancelUuid = parameters.uuid;
 
@@ -59,7 +59,7 @@ app.post('/webhook', async (req, res) => {
     try {
       await axios.delete(`${SHEETDB_API}/UUID/${cancelUuid}`);
       return res.json({
-        fulfillmentText: `❌ Booking with ID ${cancelUuid} has been cancelled.`
+        fulfillmentText: `✅ Booking with ID ${cancelUuid} has been cancelled.`
       });
     } catch (error) {
       console.error("Error cancelling booking:", error.message);
@@ -164,11 +164,6 @@ app.post('/webhook', async (req, res) => {
                 ]
               ]
             }
-          },
-          {
-            text: {
-              text: ["✅ Your booking is confirmed."]
-            }
           }
         ],
         outputContexts: []
@@ -185,3 +180,4 @@ app.post('/webhook', async (req, res) => {
 });
 
 app.listen(3000, () => console.log('Webhook server running on port 3000'));
+
