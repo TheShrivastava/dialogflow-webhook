@@ -106,6 +106,7 @@ app.post('/webhook', async (req, res) => {
                   },
                   {
                     type: "button",
+                    icon: { type: "launch" },
                     text: "Cancel Booking",
                     event: {
                       name: "cancel_booking",
