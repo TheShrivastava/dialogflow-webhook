@@ -82,6 +82,7 @@ app.post('/webhook', async (req, res) => {
 
   const activity = rawEntity || "unspecified";
   const location = parameters['geo-city'] || "unspecified";
+  const date = parameters['date-time'] || "unspecified";
   const needForTutor = parameters['tutor'] ? "Yes" : "No";
   const uuid = uuidv4();
 
@@ -93,7 +94,8 @@ app.post('/webhook', async (req, res) => {
           Activity: activity,
           UUID: uuid,
           "Need for tutor": needForTutor,
-          Timestamp: timestamp
+          "Booked for date": date,
+          "Booked on": timestamp
         }
       });
 
