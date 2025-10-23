@@ -20,7 +20,19 @@ app.post('/webhook', async (req, res) => {
   console.log("Intent:", intent);
   console.log("Parameters:", parameters);
 
-  const activity = parameters.activity || "unspecified";
+  // Extract activity from any matching entity key
+  const rawEntity =
+    parameters.sport_swimming ||
+    parameters.sport_chess ||
+    parameters.sport_badminton ||
+    parameters.acad_history ||
+    parameters.acad_maths ||
+    parameters.acad_sci ||
+    parameters.art_drawing ||
+    parameters.art_painting ||
+    parameters.art_sculpting;
+
+  const activity = rawEntity || "unspecified";
   const location = parameters['geo-city'] || "unspecified";
   const needForTutor = parameters['tutor'] ? "Yes" : "No";
   const uuid = uuidv4();
