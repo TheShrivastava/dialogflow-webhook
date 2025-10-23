@@ -15,7 +15,6 @@ app.post('/webhook', async (req, res) => {
   const parameters = req.body.queryResult.parameters;
   const timestamp = new Date().toISOString();
 
-  // Normalize intent: replace spaces and dots with underscores
   const normalizedIntent = intent.toLowerCase().replace(/[\s.]+/g, '_');
 
   console.log("Intent:", intent);
@@ -98,6 +97,20 @@ app.post('/webhook', async (req, res) => {
                       `Tutor required: ${needForTutor}`,
                       `Booking ID: ${uuid}`
                     ]
+                  },
+                  {
+                    type: "button",
+                    icon: { type: "launch" },
+                    text: "View Booking",
+                    link: SPREADSHEET_URL
+                  },
+                  {
+                    type: "button",
+                    text: "Cancel Booking",
+                    event: {
+                      name: "cancel_booking",
+                      parameters: { uuid: uuid }
+                    }
                   }
                 ]
               ]
