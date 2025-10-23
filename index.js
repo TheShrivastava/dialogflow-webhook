@@ -22,7 +22,6 @@ app.post('/webhook', async (req, res) => {
   console.log("Normalized Intent:", normalizedIntent);
   console.log("Parameters:", parameters);
 
-  // Extract activity from any matching entity key
   const rawEntity =
     parameters.sport_swimming ||
     parameters.sport_chess ||
@@ -70,22 +69,6 @@ app.post('/webhook', async (req, res) => {
                   }
                 },
                 {
-                  type: "actions",
-                  elements: [
-                    {
-                      type: "button",
-                      text: { type: "plain_text", text: "View Booking" },
-                      url: SPREADSHEET_URL
-                    },
-                    {
-                      type: "button",
-                      text: { type: "plain_text", text: "Cancel Booking" },
-                      value: uuid,
-                      action_id: "cancel_booking"
-                    }
-                  ]
-                },
-                {
                   type: "context",
                   elements: [
                     {
@@ -115,20 +98,6 @@ app.post('/webhook', async (req, res) => {
                       `Tutor required: ${needForTutor}`,
                       `Booking ID: ${uuid}`
                     ]
-                  },
-                  {
-                    type: "button",
-                    icon: { type: "launch" },
-                    text: "View Booking",
-                    link: SPREADSHEET_URL
-                  },
-                  {
-                    type: "button",
-                    text: "Cancel Booking",
-                    event: {
-                      name: "cancel_booking",
-                      parameters: { uuid: uuid }
-                    }
                   }
                 ]
               ]
@@ -146,22 +115,6 @@ app.post('/webhook', async (req, res) => {
       console.error("Error logging to spreadsheet:", error.message);
       return res.json({
         fulfillmentText: "Booking confirmed, but we couldn’t log it to the spreadsheet."
-      });
-    }
-  }
-
-  if (normalizedIntent === 'cancel_booking') {
-    const cancelUuid = parameters.uuid;
-
-    try {
-      await axios.delete(`${SHEETDB_API}/UUID/${cancelUuid}`);
-      return res.json({
-        fulfillmentText: `❌ Booking with ID ${cancelUuid} has been cancelled.`
-      });
-    } catch (error) {
-      console.error("Error cancelling booking:", error.message);
-      return res.json({
-        fulfillmentText: "We couldn’t cancel your booking. Please try again."
       });
     }
   }
