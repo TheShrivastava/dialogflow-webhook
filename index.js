@@ -141,7 +141,7 @@ app.post('/webhook', async (req, res) => {
           await axios.post(`${TELEGRAM_API}/sendPhoto`, {
             chat_id: telegramUserId,
             photo: TICK_IMAGE_URL,
-            caption: `Booking confirmed for ${activity} on ${date}`
+            caption: ``
           });
         } catch (err) {
           console.error("Telegram image send error:", err.message);
@@ -218,3 +218,4 @@ app.post('/webhook', async (req, res) => {
 });
 
 app.listen(3000, () => console.log('Webhook server running on port 3000'));
+
