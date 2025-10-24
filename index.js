@@ -20,6 +20,7 @@ const TELEGRAM_API = `https://api.telegram.org/bot${TELEGRAM_TOKEN}`;
 app.post('/webhook', async (req, res) => {
   const eventPayload = req.body.originalDetectIntentRequest?.payload?.event;
   const channelId = req.body.originalDetectIntentRequest?.payload?.data?.event?.channel;
+  const telegramUserId = req.body.originalDetectIntentRequest?.payload?.data?.event?.user?.id;
 
   if (eventPayload?.name === 'cancel_booking') {
     const cancelUuid = eventPayload.parameters?.uuid;
@@ -132,8 +133,33 @@ app.post('/webhook', async (req, res) => {
         });
       }
 
+      // ✅ Send tick image to Telegram (if user ID is available)
+      if (telegramUserId) {
+        try {
+          await axios.post(`${TELEGRAM_API}/sendPhoto`, {
+            chat_id: telegramUserId,
+            photo: TICK_IMAGE_URL,
+            caption: `✅ Booking confirmed for ${activity} on ${date}`
+          });
+        } catch (err) {
+          console.error("Telegram image send error:", err.message);
+        }
+      }
+
       return res.json({
         fulfillmentMessages: [
+          {
+            platform: "TELEGRAM",
+            payload: {
+              text: `✅ Booking confirmed for ${activity} on ${date}.\nLocation: ${location}\nTutor: ${needForTutor}\nBooking ID: ${uuid}`,
+              reply_markup: {
+                inline_keyboard: [
+                  [{ text: "View Booking", url: SPREADSHEET_URL }],
+                  [{ text: "Cancel Booking", callback_data: `cancel_booking_${uuid}` }]
+                ]
+              }
+            }
+          },
           {
             platform: "DIALOGFLOW_MESSENGER",
             payload: {
@@ -185,48 +211,6 @@ app.post('/webhook', async (req, res) => {
   }
 
   return res.json({ fulfillmentText: "Intent not handled by webhook." });
-});
-
-// ✅ Telegram webhook route using env token
-app.post(`/telegram/${TELEGRAM_TOKEN}`, async (req, res) => {
-  const message = req.body.message;
-  const chatId = message.chat.id;
-  const text = message.text?.trim();
-
-  if (!text) return res.sendStatus(200);
-
-  if (text === '/start') {
-    await axios.post(`${TELEGRAM_API}/sendMessage`, {
-      chat_id: chatId,
-      text: "Welcome to VisionBot! You can book or cancel activities here.\nTry: cancel booking <UUID>"
-    });
-    return res.sendStatus(200);
-  }
-
-  const cancelMatch = text.match(/cancel booking ([0-9a-fA-F-]{36})/i);
-  if (cancelMatch) {
-    const uuid = cancelMatch[1];
-    try {
-      await axios.delete(`${SHEETDB_API}/UUID/${uuid}`);
-      await axios.post(`${TELEGRAM_API}/sendMessage`, {
-        chat_id: chatId,
-        text: `❌ Booking with ID ${uuid} has been cancelled.`
-      });
-    } catch (error) {
-      await axios.post(`${TELEGRAM_API}/sendMessage`, {
-        chat_id: chatId,
-        text: "We couldn’t cancel your booking. Please try again."
-      });
-    }
-    return res.sendStatus(200);
-  }
-
-  await axios.post(`${TELEGRAM_API}/sendMessage`, {
-    chat_id: chatId,
-    text: "Sorry, I didn’t understand that. Try: cancel booking <UUID>"
-  });
-
-  res.sendStatus(200);
 });
 
 app.listen(3000, () => console.log('Webhook server running on port 3000'));
