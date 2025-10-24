@@ -133,7 +133,7 @@ app.post('/webhook', async (req, res) => {
         });
       }
 
-      // ✅ Send tick image to Telegram (if user ID is available)
+      // ✅ Send tick image to Telegram
       if (telegramUserId) {
         try {
           await axios.post(`${TELEGRAM_API}/sendPhoto`, {
@@ -197,6 +197,11 @@ app.post('/webhook', async (req, res) => {
                   }
                 ]
               ]
+            }
+          },
+          {
+            text: {
+              text: ["✅ Your booking is confirmed."]
             }
           }
         ],
