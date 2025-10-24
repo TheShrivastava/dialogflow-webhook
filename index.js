@@ -17,6 +17,8 @@ const slackClient = new WebClient(process.env.SLACK_BOT_TOKEN);
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const TELEGRAM_API = `https://api.telegram.org/bot${TELEGRAM_TOKEN}`;
 
+console.log("Incoming webhook payload:", JSON.stringify(req.body, null, 2));
+
 app.post('/webhook', async (req, res) => {
   const eventPayload = req.body.originalDetectIntentRequest?.payload?.event;
   const channelId = req.body.originalDetectIntentRequest?.payload?.data?.event?.channel;
@@ -219,3 +221,4 @@ app.post('/webhook', async (req, res) => {
 });
 
 app.listen(3000, () => console.log('Webhook server running on port 3000'));
+
