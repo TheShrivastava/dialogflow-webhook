@@ -18,12 +18,13 @@ const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const TELEGRAM_API = `https://api.telegram.org/bot${TELEGRAM_TOKEN}`;
 
 app.post('/webhook', async (req, res) => {
-  
-  console.log("Incoming webhook payload:", JSON.stringify(req.body, null, 2));
-  
   const eventPayload = req.body.originalDetectIntentRequest?.payload?.event;
   const channelId = req.body.originalDetectIntentRequest?.payload?.data?.event?.channel;
-  const telegramUserId = req.body.originalDetectIntentRequest?.payload?.data?.event?.user?.id;
+
+  // ✅ Correct Telegram user ID extraction
+  const telegramUserId =
+    req.body.originalDetectIntentRequest?.payload?.data?.chat?.id ||
+    req.body.originalDetectIntentRequest?.payload?.data?.from?.id;
 
   if (eventPayload?.name === 'cancel_booking') {
     const cancelUuid = eventPayload.parameters?.uuid;
@@ -90,6 +91,7 @@ app.post('/webhook', async (req, res) => {
         }
       });
 
+      // ✅ Slack response
       if (channelId) {
         await slackClient.chat.postMessage({
           channel: channelId,
@@ -136,7 +138,7 @@ app.post('/webhook', async (req, res) => {
         });
       }
 
-      // ✅ Send tick image to Telegram
+      // ✅ Telegram image response
       if (telegramUserId) {
         try {
           await axios.post(`${TELEGRAM_API}/sendPhoto`, {
@@ -201,11 +203,6 @@ app.post('/webhook', async (req, res) => {
                 ]
               ]
             }
-          },
-          {
-            text: {
-              text: ["✅ Your booking is confirmed."]
-            }
           }
         ],
         fulfillmentText: "Booking confirmed!"
@@ -222,5 +219,3 @@ app.post('/webhook', async (req, res) => {
 });
 
 app.listen(3000, () => console.log('Webhook server running on port 3000'));
-
-
