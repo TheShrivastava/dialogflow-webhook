@@ -90,21 +90,9 @@ app.post('/webhook', async (req, res) => {
           text: `Booking confirmed: ${activity}`,
           blocks: [
             {
-              type: "context",
-              elements: [
-                {
-                  type: "image",
-                  image_url: TICK_IMAGE_URL,
-                  alt_text: "Booking confirmed"
-                }
-              ]
-            },
-            {
-              type: "section",
-              text: {
-                type: "mrkdwn",
-                text: `*Your ${activity} booking is confirmed!*\nLocation: *${location}*\nTutor required: *${needForTutor}*\nDate: *${date}*`
-              }
+              "type": "section",
+              "text": { "type": "mrkdwn", "text": `*Your ${activity} booking is confirmed!*\nLocation: *${location}*\nTutor required: *${needForTutor}*\nDate: *${date}*`},
+              "accessory": { "type": "image", "image_url": TICK_IMAGE_URL, "alt_text": "Booking confirmed"}
             },
             {
               type: "context",
@@ -192,4 +180,5 @@ app.post('/webhook', async (req, res) => {
 });
 
 app.listen(3000, () => console.log('Webhook server running on port 3000'));
+
 
