@@ -21,7 +21,6 @@ app.post('/webhook', async (req, res) => {
   const eventPayload = req.body.originalDetectIntentRequest?.payload?.event;
   const channelId = req.body.originalDetectIntentRequest?.payload?.data?.event?.channel;
 
-  // ✅ Correct Telegram user ID extraction
   const telegramUserId =
     req.body.originalDetectIntentRequest?.payload?.data?.chat?.id ||
     req.body.originalDetectIntentRequest?.payload?.data?.from?.id;
@@ -91,7 +90,6 @@ app.post('/webhook', async (req, res) => {
         }
       });
 
-      // ✅ Slack response
       if (channelId) {
         await slackClient.chat.postMessage({
           channel: channelId,
@@ -138,13 +136,12 @@ app.post('/webhook', async (req, res) => {
         });
       }
 
-      // ✅ Telegram image response
       if (telegramUserId) {
         try {
           await axios.post(`${TELEGRAM_API}/sendPhoto`, {
             chat_id: telegramUserId,
             photo: TICK_IMAGE_URL,
-            caption: `✅ Booking confirmed for ${activity} on ${date}`
+            caption: `Booking confirmed for ${activity} on ${date}`
           });
         } catch (err) {
           console.error("Telegram image send error:", err.message);
@@ -156,12 +153,14 @@ app.post('/webhook', async (req, res) => {
           {
             platform: "TELEGRAM",
             payload: {
-              text: `✅ Booking confirmed for ${activity} on ${date}.\nLocation: ${location}\nTutor: ${needForTutor}\nBooking ID: ${uuid}`,
-              reply_markup: {
-                inline_keyboard: [
-                  [{ text: "View Booking", url: SPREADSHEET_URL }],
-                  [{ text: "Cancel Booking", callback_data: `cancel_booking_${uuid}` }]
-                ]
+              telegram: {
+                text: `Booking confirmed for ${activity} on ${date}.\nLocation: ${location}\nTutor: ${needForTutor}\nBooking ID: ${uuid}`,
+                reply_markup: {
+                  inline_keyboard: [
+                    [{ text: "View Booking", url: SPREADSHEET_URL }],
+                    [{ text: "Cancel Booking", callback_data: `cancel_booking_${uuid}` }]
+                  ]
+                }
               }
             }
           },
