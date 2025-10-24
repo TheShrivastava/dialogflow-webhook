@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vision | Time Management Made Simple</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background-image: 
+        linear-gradient(to bottom right, rgba(255, 230, 200, 0.85), rgba(255, 200, 180, 0.85)),
+        url('assets/multi_robot_pattern.png');
+      background-repeat: repeat;
+      background-size: 300px;
+      background-position: top left;
+      background-attachment: fixed;
+      animation: scrollBackground 60s linear infinite;
+      color: #221E3E;
+    }
+
+    @keyframes scrollBackground {
+      from { background-position: 0 0; }
+      to { background-position: 1000px 1000px; }
+    }
+
+    header {
+      background-color: #221E3E;
+      color: white;
+      text-align: center;
+      padding: 0rem 0rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .banner {
+      background-image: url('assets/top_banner.png');
+      background-size: cover;
+      background-position: center;
+      padding: 3rem 1rem;
+    }
+
+    .banner h1 {
+      margin: 0;
+      font-size: 2.5rem;
+    }
+
+    .banner p {
+      margin-top: 0.5rem;
+      font-size: 1.2rem;
+    }
+
+    .hero {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 3rem 1rem;
+      text-align: center;
+    }
+
+    .hero h2 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      color: #221E3E;
+    }
+
+    .hero p {
+      max-width: 600px;
+      font-size: 1.1rem;
+      margin-bottom: 2rem;
+    }
+
+    .features {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 2rem;
+      padding: 2rem;
+    }
+
+    .feature-card {
+      background: #fff8f0;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      padding: 1.5rem;
+      max-width: 300px;
+      text-align: center;
+    }
+
+    .feature-card h3 {
+      margin-top: 0;
+      color: #ff6600;
+    }
+
+    footer {
+      background-color: #221E3E;
+      color: white;
+      text-align: center;
+      padding: 1rem;
+      margin-top: 2rem;
+    }
+
+    df-messenger {
+      --df-messenger-bot-message: #fff8f0;
+      --df-messenger-button-titlebar-color: #221E3E;
+      --df-messenger-chat-background-color: #ffffff;
+      --df-messenger-font-color: #221E3E;
+      --df-messenger-send-icon: #ff6600;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="banner">
+      <h1>Vision</h1>
+      <p>Your AI-powered assistant for mastering time</p>
+    </div>
+  </header>
+
+  <section class="hero">
+    <h2>Book. Manage. Thrive.</h2>
+    <p>Vision is a simple chatbot that helps you book a wide range of activities — from sports to study sessions — all in one place. Say goodbye to scattered schedules and hello to clarity.</p>
+  </section>
+
+  <section class="features">
+    <div class="feature-card">
+      <h3>🎯 Smart Booking</h3>
+      <p>Instantly schedule activities with natural language — no forms, no fuss.</p>
+    </div>
+    <div class="feature-card">
+      <h3>📅 Unified Dashboard</h3>
+      <p>See all registered bookings in one clean spreadsheet. Stay organized effortlessly.</p>
+    </div>
+    <div class="feature-card">
+      <h3>🤖 Multi Platform Availability</h3>
+      <p>Vision is available on multiple platforms including this site, Telegram, and Slack.</p>
+    </div>
+  </section>
+
+  <footer>
+    &copy; 2025 Vision Inc. | Built for better time management
+  </footer>
+
+  <script src="https://www.gstatic.com/dialogflow-console/fast/messenger/bootstrap.js?v=1"></script>
+  <df-messenger
+    chat-icon="https://raw.githubusercontent.com/TheShrivastava/dialogflow-webhook/refs/heads/main/vision_icon.png"
+    intent="WELCOME"
+    chat-title="Vision"
+    agent-id="8bcc10a9-ef53-445d-814e-eee1dd0f1dca"
+    language-code="en"
+  ></df-messenger>
+</body>
+</html>
