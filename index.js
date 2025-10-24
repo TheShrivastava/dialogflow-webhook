@@ -5,14 +5,17 @@ const { v4: uuidv4 } = require('uuid');
 const { WebClient } = require('@slack/web-api');
 
 const app = express();
-app.use(express.static('public')); // Hosting the webpage for messenger
+app.use(express.static('public'));
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 const SHEETDB_API = 'https://sheetdb.io/api/v1/y5jawzr5mj38r';
 const SPREADSHEET_URL = 'https://docs.google.com/spreadsheets/d/1eU7cn3XBsoTFrMgYKhMOJC-YMqx_usqh1KAYyk4UL30/edit?pli=1&gid=0';
 const TICK_IMAGE_URL = 'https://www.clipartkey.com/mpngs/m/230-2305459_green-ticks-png-image-check-mark-transparent-gif.png';
 
 const slackClient = new WebClient(process.env.SLACK_BOT_TOKEN);
+const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const TELEGRAM_API = `https://api.telegram.org/bot${TELEGRAM_TOKEN}`;
 
 app.post('/webhook', async (req, res) => {
   const eventPayload = req.body.originalDetectIntentRequest?.payload?.event;
@@ -83,16 +86,22 @@ app.post('/webhook', async (req, res) => {
         }
       });
 
-      // Send message to Slack manually
       if (channelId) {
         await slackClient.chat.postMessage({
           channel: channelId,
           text: `Booking confirmed: ${activity}`,
           blocks: [
             {
-              "type": "section",
-              "text": { "type": "mrkdwn", "text": `*Your ${activity} booking is confirmed!*\nLocation: *${location}*\nTutor required: *${needForTutor}*\nDate: *${date}*`},
-              "accessory": { "type": "image", "image_url": TICK_IMAGE_URL, "alt_text": "Booking confirmed"}
+              type: "section",
+              text: {
+                type: "mrkdwn",
+                text: `*Your ${activity} booking is confirmed!*\nLocation: *${location}*\nTutor required: *${needForTutor}*\nDate: *${date}*`
+              },
+              accessory: {
+                type: "image",
+                image_url: TICK_IMAGE_URL,
+                alt_text: "Booking confirmed"
+              }
             },
             {
               type: "context",
@@ -123,7 +132,6 @@ app.post('/webhook', async (req, res) => {
         });
       }
 
-      // Respond to Dialogflow Messenger
       return res.json({
         fulfillmentMessages: [
           {
@@ -179,6 +187,46 @@ app.post('/webhook', async (req, res) => {
   return res.json({ fulfillmentText: "Intent not handled by webhook." });
 });
 
+// ✅ Telegram webhook route using env token
+app.post(`/telegram/${TELEGRAM_TOKEN}`, async (req, res) => {
+  const message = req.body.message;
+  const chatId = message.chat.id;
+  const text = message.text?.trim();
+
+  if (!text) return res.sendStatus(200);
+
+  if (text === '/start') {
+    await axios.post(`${TELEGRAM_API}/sendMessage`, {
+      chat_id: chatId,
+      text: "Welcome to VisionBot! You can book or cancel activities here.\nTry: cancel booking <UUID>"
+    });
+    return res.sendStatus(200);
+  }
+
+  const cancelMatch = text.match(/cancel booking ([0-9a-fA-F-]{36})/i);
+  if (cancelMatch) {
+    const uuid = cancelMatch[1];
+    try {
+      await axios.delete(`${SHEETDB_API}/UUID/${uuid}`);
+      await axios.post(`${TELEGRAM_API}/sendMessage`, {
+        chat_id: chatId,
+        text: `❌ Booking with ID ${uuid} has been cancelled.`
+      });
+    } catch (error) {
+      await axios.post(`${TELEGRAM_API}/sendMessage`, {
+        chat_id: chatId,
+        text: "We couldn’t cancel your booking. Please try again."
+      });
+    }
+    return res.sendStatus(200);
+  }
+
+  await axios.post(`${TELEGRAM_API}/sendMessage`, {
+    chat_id: chatId,
+    text: "Sorry, I didn’t understand that. Try: cancel booking <UUID>"
+  });
+
+  res.sendStatus(200);
+});
+
 app.listen(3000, () => console.log('Webhook server running on port 3000'));
-
-
