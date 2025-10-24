@@ -5,6 +5,7 @@ const { v4: uuidv4 } = require('uuid');
 const { WebClient } = require('@slack/web-api');
 
 const app = express();
+app.use(express.static('public')); // Hosting the webpage for messenger
 app.use(bodyParser.json());
 
 const SHEETDB_API = 'https://sheetdb.io/api/v1/y5jawzr5mj38r';
@@ -82,17 +83,22 @@ app.post('/webhook', async (req, res) => {
         }
       });
 
-      // ✅ Send message to Slack manually
+      // Send message to Slack manually
       if (channelId) {
         await slackClient.chat.postMessage({
           channel: channelId,
-          text: `✅ Booking confirmed: ${activity}`,
+          text: `Booking confirmed: ${activity}`,
           blocks: [
+            {
+            type: "image",
+            image_url: TICK_IMAGE_URL,
+            alt_text: "Booking confirmed"
+            },
             {
               type: "section",
               text: {
                 type: "mrkdwn",
-                text: `✅ *Your ${activity} booking is confirmed!*\nLocation: *${location}*\nTutor required: *${needForTutor}*\nDate: *${date}*`
+                text: `*Your ${activity} booking is confirmed!*\nLocation: *${location}*\nTutor required: *${needForTutor}*\nDate: *${date}*`
               }
             },
             {
@@ -115,6 +121,7 @@ app.post('/webhook', async (req, res) => {
                 {
                   type: "button",
                   text: { type: "plain_text", text: "Cancel Booking" },
+                  style: "danger",
                   value: `cancel_booking_${uuid}`
                 }
               ]
@@ -123,7 +130,7 @@ app.post('/webhook', async (req, res) => {
         });
       }
 
-      // ✅ Respond to Dialogflow Messenger
+      // Respond to Dialogflow Messenger
       return res.json({
         fulfillmentMessages: [
           {
@@ -138,7 +145,7 @@ app.post('/webhook', async (req, res) => {
                   },
                   {
                     type: "description",
-                    title: `✅ Booking Confirmed: ${activity}`,
+                    title: `Booking Confirmed: ${activity}`,
                     text: [
                       `Location: ${location}`,
                       `Tutor required: ${needForTutor}`,
