@@ -90,9 +90,14 @@ app.post('/webhook', async (req, res) => {
           text: `Booking confirmed: ${activity}`,
           blocks: [
             {
-            type: "image",
-            image_url: TICK_IMAGE_URL,
-            alt_text: "Booking confirmed"
+              type: "context",
+              elements: [
+                {
+                  type: "image",
+                  image_url: TICK_IMAGE_URL,
+                  alt_text: "Booking confirmed"
+                }
+              ]
             },
             {
               type: "section",
@@ -187,3 +192,4 @@ app.post('/webhook', async (req, res) => {
 });
 
 app.listen(3000, () => console.log('Webhook server running on port 3000'));
+
